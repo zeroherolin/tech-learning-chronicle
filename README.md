@@ -5,8 +5,8 @@
 [LLVM MLIR 基础测试](LLVM_MLIR_基础测试.md)
 
 - 构建MLIR环境
-- MLIR opt和编译测试
-- MLIR to C测试
+- MLIR Opt 测试
+- MLIR EmitC 测试
 
 [MLIR Dialect 体系](MLIR_Dialect_体系.md)
 
@@ -48,8 +48,8 @@
 
 [Nvidia CUDA 基础](Nvidia_CUDA_基础.md) [Updating...]
 
-核函数 线程模型 设备管理 错误处理 内存模型和内存管理 \
-流 事件 原子操作 性能优化策略 高级并行模式 多GPU编程 CUDA库 调试工具 CMake编译
+核函数 | 线程模型 | 设备管理 | 错误处理 | 内存模型和内存管理 \
+流 | 事件 | 原子操作 | 性能优化策略 | 高级并行模式 | 多GPU编程 | CUDA库 | 调试工具 | CMake编译
 
 ## AI模型相关
 

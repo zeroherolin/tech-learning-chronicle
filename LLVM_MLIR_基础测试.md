@@ -41,7 +41,7 @@ export PYTHONPATH=$LLVM_BUILD_DIR/tools/mlir/python_packages/mlir_core
 
 通过pybind是为以后在python中调用做准备
 
-## MLIR opt和编译测试
+## MLIR Opt 测试
 
 - 查看支持的pass
 
@@ -180,7 +180,7 @@ build && run "$1" "$2" "$3" "$4"
 > $ ./run_simple_complex.sh 1.5 2.3 3.7 4.1 \
 5.200000 6.400000
 
-## MLIR to C测试
+## MLIR EmitC 测试
 
 相关pass
 

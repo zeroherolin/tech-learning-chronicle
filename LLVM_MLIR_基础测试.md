@@ -1,7 +1,9 @@
 # LLVM & MLIR
 
+Code: [https://github.com/llvm/llvm-project](https://github.com/llvm/llvm-project) \
 Clang Webpage: [https://clang.llvm.org/](https://clang.llvm.org/) \
-MLIR Webpage: [https://mlir.llvm.org/](https://mlir.llvm.org/)
+MLIR Webpage: [https://mlir.llvm.org/](https://mlir.llvm.org/) \
+Discourse Webpage: [https://discourse.llvm.org/tag/mlir](https://discourse.llvm.org/tag/mlir)
 
 ## 构建MLIR环境
 
@@ -19,8 +21,8 @@ python -m pip install -r mlir/python/requirements.txt
 mkdir build && cd build
 
 cmake -G Ninja ../llvm \
-    -DLLVM_ENABLE_PROJECTS=mlir \
-    -DLLVM_BUILD_EXAMPLES=ON \
+    -DLLVM_ENABLE_PROJECTS="mlir;clang" \
+    -DLLVM_BUILD_EXAMPLES=OFF \
     -DLLVM_TARGETS_TO_BUILD="X86" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=ON \
@@ -39,13 +41,7 @@ export PYTHONPATH=$LLVM_BUILD_DIR/tools/mlir/python_packages/mlir_core
 
 通过pybind是为以后在python中调用做准备
 
-## MLIR编译测试
-
-- 需要安装Clang编译器
-
-```bash
-sudo apt install clang
-```
+## MLIR opt和编译测试
 
 - 查看支持的pass
 
@@ -55,7 +51,7 @@ Passes [https://mlir.llvm.org/docs/Passes/](https://mlir.llvm.org/docs/Passes/)
 
 simple_complex.mlir
 
-```
+```mlir
 module {
     // 声明外部函数
     llvm.func @printf(!llvm.ptr, ...) -> i32
@@ -142,8 +138,7 @@ mlir-translate --mlir-to-llvmir simple_complex_llvm.mlir -o simple_complex.ll
 - 编译生成可执行文件
 
 ```bash
-clang -O3 simple_complex.ll -o simple_complex -Wno-override-module -mllvm -opaque-pointers
-# -opaque-pointers选项启用不透明指针模式：LLVM 15开始默认启用opaque-pointers，Clang 14仅部分支持或不支持此特性
+clang -O3 simple_complex.ll -o simple_complex -Wno-override-module
 ```
 
 - 完整脚本（含验证）
@@ -163,7 +158,7 @@ build() {
 
     mlir-translate --mlir-to-llvmir simple_complex_llvm.mlir -o simple_complex.ll
 
-    clang -O3 simple_complex.ll -o simple_complex -Wno-override-module -mllvm -opaque-pointers
+    clang -O3 simple_complex.ll -o simple_complex -Wno-override-module
 }
 
 # 执行阶段
@@ -187,62 +182,110 @@ build && run "$1" "$2" "$3" "$4"
 
 ## MLIR to C测试
 
+相关pass
+
+```
+-convert-arith-to-emitc
+-convert-func-to-emitc
+-convert-math-to-emitc
+-convert-memref-to-emitc
+-convert-scf-to-emitc
+-convert-to-emitc
+```
+
 - mlir源码
 
 vector_add.mlir
 
-```
-func.func @vector_add(%arg0: memref<10xf32>, %arg1: memref<10xf32>, %arg2: memref<10xf32>) {
-  %c0 = arith.constant 0 : index
-  %c10 = arith.constant 10 : index
-  %c1 = arith.constant 1 : index
-  scf.for %i = %c0 to %c10 step %c1 {
-    %a = memref.load %arg0[%i] : memref<10xf32>
-    %b = memref.load %arg1[%i] : memref<10xf32>
-    %sum = arith.addf %a, %b : f32
-    memref.store %sum, %arg2[%i] : memref<10xf32>
+```mlir
+module {
+  func.func @vector_add(%arg0: memref<10xf32>, %arg1: memref<10xf32>, %arg2: memref<10xf32>) {
+    %c0 = arith.constant 0 : index
+    %c10 = arith.constant 10 : index
+    %c1 = arith.constant 1 : index
+    scf.for %i = %c0 to %c10 step %c1 {
+      %a = memref.load %arg0[%i] : memref<10xf32>
+      %b = memref.load %arg1[%i] : memref<10xf32>
+      %sum = arith.addf %a, %b : f32
+      memref.store %sum, %arg2[%i] : memref<10xf32>
+    }
+    return
   }
-  return
 }
+
 ```
 
 - Pass到emitc方言
 
 ```bash
 mlir-opt vector_add.mlir \
-  --convert-arith-to-emitc \
-  --convert-func-to-emitc \
-  --convert-math-to-emitc \
-  --convert-memref-to-emitc \
-  --convert-scf-to-emitc \
-  -o vector_add_emitc.mlir
+    --convert-arith-to-emitc \
+    --convert-func-to-emitc \
+    --convert-math-to-emitc \
+    --convert-memref-to-emitc \
+    --convert-scf-to-emitc \
+    -o vector_add_emitc.mlir
 ```
 
-这里pass有问题，手动调整如下
+输出
 
 vector_add_emitc.mlir
 
-```
-emitc.func @vector_add(
-    %arg0: !emitc.array<10xf32>, %arg1: !emitc.array<10xf32>, %arg2: !emitc.array<10xf32>
-) {
-    %c0 = "emitc.constant"() {value = 0 : index} : () -> index
-    %c10 = "emitc.constant"() {value = 10 : index} : () -> index
-    %c1 = "emitc.constant"() {value = 1 : index} : () -> index
-    emitc.for %i = %c0 to %c10 step %c1 {
-        %a_lv = emitc.subscript %arg0[%i] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
-        %b_lv = emitc.subscript %arg1[%i] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
-        %c_lv = emitc.subscript %arg2[%i] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
-        %a = emitc.load %a_lv : !emitc.lvalue<f32>
-        %b = emitc.load %b_lv : !emitc.lvalue<f32>
-        %sum = emitc.add %a, %b : (f32, f32) -> f32
-        "emitc.assign"(%c_lv, %sum) : (!emitc.lvalue<f32>, f32) -> ()
+```mlir
+module {
+  emitc.func @vector_add(%arg0: memref<10xf32>, %arg1: memref<10xf32>, %arg2: memref<10xf32>) {
+    %0 = builtin.unrealized_conversion_cast %arg2 : memref<10xf32> to !emitc.array<10xf32>
+    %1 = builtin.unrealized_conversion_cast %arg1 : memref<10xf32> to !emitc.array<10xf32>
+    %2 = builtin.unrealized_conversion_cast %arg0 : memref<10xf32> to !emitc.array<10xf32>
+    %3 = "emitc.constant"() <{value = 0 : index}> : () -> !emitc.size_t
+    %4 = "emitc.constant"() <{value = 10 : index}> : () -> !emitc.size_t
+    %5 = "emitc.constant"() <{value = 1 : index}> : () -> !emitc.size_t
+    for %arg3 = %3 to %4 step %5  : !emitc.size_t {
+      %6 = builtin.unrealized_conversion_cast %arg3 : !emitc.size_t to index
+      %7 = subscript %2[%6] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      %8 = load %7 : <f32>
+      %9 = subscript %1[%6] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      %10 = load %9 : <f32>
+      %11 = add %8, %10 : (f32, f32) -> f32
+      %12 = subscript %0[%6] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      assign %11 : f32 to %12 : <f32>
     }
-    emitc.return
+    return
+  }
 }
 ```
 
-- 编译到C
+这里官方pass未完全实现，手动调整如下
+
+vector_add_emitc.mlir
+
+```mlir
+module {
+  emitc.func @vector_add(%arg0: !emitc.array<10xf32>, %arg1: !emitc.array<10xf32>, %arg2: !emitc.array<10xf32>) {
+    %3 = "emitc.constant"() <{value = 0 : index}> : () -> index
+    %4 = "emitc.constant"() <{value = 10 : index}> : () -> index
+    %5 = "emitc.constant"() <{value = 1 : index}> : () -> index
+    for %arg3 = %3 to %4 step %5 {
+      %7 = subscript %arg0[%arg3] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      %8 = load %7 : <f32>
+      %9 = subscript %arg1[%arg3] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      %10 = load %9 : <f32>
+      %11 = add %8, %10 : (f32, f32) -> f32
+      %12 = subscript %arg2[%arg3] : (!emitc.array<10xf32>, index) -> !emitc.lvalue<f32>
+      assign %11 : f32 to %12 : <f32>
+    }
+    return
+  }
+}
+```
+
+- EmitC
+
+```bash
+mlir-translate vector_add_emitc.mlir -mlir-to-cpp -o vector_add.cpp
+```
+
+输出
 
 vector_add.cpp
 
@@ -261,35 +304,7 @@ void vector_add(float v1[10], float v2[10], float v3[10]) {
 }
 ```
 
-- 测试
-
-```cpp
-#include <stdio.h>
-
-void vector_add(float v1[10], float v2[10], float v3[10]);
-
-int main() {
-  float vector1[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
-  float vector2[10] = {10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-  float result[10];
-
-  vector_add(vector1, vector2, result);
-
-  printf("Result:\n");
-  for (int i = 0; i < 10; i++) {
-    printf("%.2f ", result[i]);
-  }
-  printf("\n");
-  
-  return 0;
-}
-```
-
-输出
-
-> Result: \
-11.00 11.00 11.00 11.00 11.00 11.00 11.00 11.00 11.00 11.00 
-
+emitc-translate[https://github.com/iml130/mlir-emitc]已合并至mlir-translate
 
 ***
 🔙 [Go Back](README.md)

@@ -1,29 +1,34 @@
-# Selected Learning Notes
+# Tech Learning Chronicle
 
 ## AI编译器相关
 
-[LLVM and MLIR](LLVM_and_MLIR.md)
+[LLVM MLIR 基础测试](LLVM_MLIR_基础测试.md)
 
 - 构建MLIR环境
-- MLIR编译测试（浮点复数运算）
-- MLIR to C测试（向量运算）
+- MLIR opt和编译测试
+- MLIR to C测试
 
-[Halide解耦算法描述](Halide解耦算法描述.md) [Updating...]
+[MLIR Dialect 体系](MLIR_Dialect_体系.md) [Updating...]
 
-[TVM深度学习编译器](TVM深度学习编译器.md) [Updating...]
+[IREE 端到端编译器运行时系统](IREE_端到端编译器运行时系统.md) [Updating...]
 
-[Triton DSL 定义高性能算子](Triton_DSL定义高性能算子.md) [Updating...]
+[Halide 解耦算法描述](Halide_解耦算法描述.md) [Updating...]
+
+[TVM 深度学习编译器](TVM_深度学习编译器.md) [Updating...]
+
+[Triton DSL 定义高性能算子](Triton_DSL_定义高性能算子.md) [Updating...]
 
 [Torch-MLIR 连接PyTorch和MLIR](Torch-MLIR_连接PyTorch和MLIR.md)
 
 - 构建Torch-MLIR环境
-- Torch-MLIR测试（矩阵乘, FFT, .etc）
+- Torch-MLIR测试
 
 [Allo Accelerator Design Language](Allo_Accelerator_Design_Language.md)
 
 - 构建Allo环境（宿主机或Docker）
+- Allo测试
 - 示例：GEMM
-- 整数输出稳态脉动阵列
+- 示例：整数输出稳态脉动阵列
 - Allo原语
 
 ## 编程工具

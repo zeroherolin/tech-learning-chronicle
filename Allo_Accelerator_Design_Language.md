@@ -6,9 +6,11 @@ Paper: [Allo: A Programming Model for Composable Accelerator Design] [https://dl
 Code: [https://github.com/cornell-zhang/allo](https://github.com/cornell-zhang/allo) \
 Documentation: [https://cornell-zhang.github.io/allo/](https://cornell-zhang.github.io/allo/)
 
-## 已更新到LLVM19
+**已更新到LLVM19**
 
-### 编译构建环境
+## 编译构建环境
+
+### 宿主机构建
 
 ```bash
 conda create -n allo python=3.12 -y
@@ -58,7 +60,7 @@ cd ~/allo
 python3 -m pip install -v -e .
 ```
 
-### 或下载Docker镜像构建
+### 下载Docker镜像构建
 
 ```bash
 docker pull chhzh123/allo:llvm-19.x-py3.12
@@ -67,7 +69,7 @@ docker run --rm -it chhzh123/allo:llvm-19.x-py3.12
 (docker) $ python3 -m pip install -v -e .
 ```
 
-### 或自建dockerfile
+### 自建dockerfile
 
 - build镜像
 
@@ -179,7 +181,7 @@ RUN cd /root/allo && \
 docker run --network=host --rm -it myallo:1.0.0
 ```
 
-### 测试
+## Allo测试
 
 执行`python -m pytest tests`之前先注释vitis（cmake）环境，有冲突
 
@@ -188,7 +190,7 @@ cd ~/allo
 python -m pytest tests
 ```
 
-### 示例：GEMM
+## 示例：GEMM
 
 ```python
 import allo
@@ -219,7 +221,7 @@ print(s.module)
 mod = s.build(target="vhls", mode="csyn", project="gemm.prj")
 ```
 
-## 整数输出稳态脉动阵列
+## 示例：整数输出稳态脉动阵列
 
 <img src="assets/systolic-array-pes.png" width=400/>
 

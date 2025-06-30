@@ -65,11 +65,6 @@
 | `mhlo/chlo/stablehlo` | XLA高阶算子 | 支持：`TensorType` | `*.dot_general`，`*.convolution`，`*.reduce` |
 | `torch` | PyTorch前端支持 | 支持：`TensorType`，基础类型 | `torch.aten.max_pool2d`，`torch.operator` |
 
-tensorflow: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow) \
-tflite: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite) \
-stablehlo: [https://github.com/openxla/stablehlo](https://github.com/openxla/stablehlo) \
-torch: [https://github.com/llvm/torch-mlir](https://github.com/llvm/torch-mlir)
-
 ### 硬件相关和低层 Dialect
 
 | Dialect | 特点/作用 | Type | Operation举例 |
@@ -110,3 +105,15 @@ torch: [https://github.com/llvm/torch-mlir](https://github.com/llvm/torch-mlir)
 | `acc` | OpenACC支持 | 支持：基础类型 | `acc.declare`，`acc.update`，`acc.parallel` |
 | `mpi` | MPI通信 | 支持：基础类型 | `mpi.iallreduce`，`mpi.recv`，`mpi.send` |
 | `mesh` | 分布式计算 | 支持：基础类型 | `mesh.shard`，`mesh.all_reduce`，`mesh.send` |
+
+***
+未合并主线的高层方言：
+
+tensorflow: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow) \
+tflite: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite) \
+mlir-hlo: [https://github.com/tensorflow/mlir-hlo](https://github.com/tensorflow/mlir-hlo) \
+stablehlo: [https://github.com/openxla/stablehlo](https://github.com/openxla/stablehlo) \
+torch: [https://github.com/llvm/torch-mlir](https://github.com/llvm/torch-mlir)
+
+***
+🔙 [Go Back](README.md)

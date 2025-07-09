@@ -120,11 +120,11 @@ BUILDSYSTEM_DIR:=/lib/modules/6.6.62+rpt-rpi-2712/build # linux 源码目录
 PWD:=$(shell pwd)
 
 all :
-        $(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) modules
+	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) modules
 
 clean:
-        $(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
-        @/bin/rm -f *.ko modules.order *.mod.c *.o *.o.ur-safe .*.o.cmd
+	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
+	@/bin/rm -f *.ko modules.order *.mod.c *.o *.o.ur-safe .*.o.cmd
 ```
 
 - 本地编译（成功）

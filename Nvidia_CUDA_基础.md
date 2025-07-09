@@ -437,5 +437,4 @@ cudaEventElapsedTime(&milliseconds, event1, event2);
 ## CMake编译
 
 ***
-👉 Updating...
 🔙 [Go Back](README.md)

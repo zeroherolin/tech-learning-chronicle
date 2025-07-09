@@ -11,6 +11,8 @@
 
 <img src="assets/mlir-early-system.png" width=900/>
 
+（图片为早期体系，现已拆分）
+
 ### 核心/基础 Dialect
 
 | Dialect | 特点/作用 | Type | Operation举例 |
@@ -107,7 +109,7 @@
 | `mesh` | 分布式计算 | 支持：基础类型 | `mesh.shard`，`mesh.all_reduce`，`mesh.send` |
 
 ***
-未合并主线的高层方言：
+未合并主线的高层Dialect：
 
 tensorflow: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/tensorflow) \
 tflite: [https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/compiler/mlir/lite) \

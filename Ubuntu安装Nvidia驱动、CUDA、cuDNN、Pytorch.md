@@ -1,4 +1,4 @@
-# Ubuntu安装Nvidia驱动、CUDA、Pytorch
+# Ubuntu安装Nvidia驱动、CUDA、cuDNN、Pytorch
 
 ## 安装驱动
 
@@ -16,7 +16,7 @@ sudo apt install nvidia-driver-535-server
 nvidia-smi
 ```
 
-## 安装cuda
+## 安装CUDA
 
 - 下载并执行安装程序
 
@@ -44,7 +44,18 @@ source ~/.bashrc
 nvcc --version
 ```
 
-## 安装pytorch
+## 安装cuDNN
+
+- 执行安装
+
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt update
+sudo apt -y install cudnn-cuda-12
+```
+
+## 安装Pytorch
 
 - 创建虚拟环境
 

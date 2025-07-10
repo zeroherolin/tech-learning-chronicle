@@ -8,13 +8,24 @@
 
 [AST抽象语法树](AST抽象语法树.md) [Updating...]
 
-[常用IR优化](常用IR优化.md) [Updating...]
+[AI编译器常用优化策略](AI编译器常用优化策略.md)
 
-    计算图优化： 算子融合 | 常量折叠 | 死代码消除（DCE） | 公共子表达式消除（CSE）
-    算子级优化： 循环优化（展开、分块） | 内存访问优化 | 并行化策略
-    硬件特定优化： 指令集映射 | 张量核心 | 线程/块调度 | 带宽优化
+    前端优化： 算子融合 | 布局转换 | 内存分配 | 常量折叠与常量传播
+             代数简化 | 死代码消除（DCE） | 公共子表达式消除（CSE）
+    后端优化： 循环优化 | 指令优化 | 存储优化 | 并行化与流水线
+    Auto-Tuning自动调优： 原理 | 应用方式 | 典型案例
 
 [JIT和AOT](JIT和AOT.md) [Updating...]
+
+[Halide 解耦算法描述](Halide_解耦算法描述.md) [Updating...]
+
+[TVM 深度学习编译器](TVM_深度学习编译器.md) [Updating...]
+
+    构建TVM环境 | 
+
+[Allo Accelerator Design Language](Allo_Accelerator_Design_Language.md)
+
+    构建Allo环境（宿主机或Docker） | Allo测试 | 示例：GEMM | 示例：整数输出稳态脉动阵列 | Allo原语
 
 [LLVM MLIR 基础测试](LLVM_MLIR_基础测试.md)
 
@@ -31,21 +42,11 @@
 
 [ScaleHLS-HIDA 高效映射Torch模型到HLS](ScaleHLS-HIDA_高效映射Torch模型到HLS.md) [Updating...]
 
-    构建ScaleHLS环境 |
+    构建ScaleHLS环境 | 
 
 [IREE 端到端编译器运行时系统](IREE_端到端编译器运行时系统.md) [Updating...]
 
-[Halide 解耦算法描述](Halide_解耦算法描述.md) [Updating...]
-
-[TVM 深度学习编译器](TVM_深度学习编译器.md) [Updating...]
-
-    构建TVM环境 |
-
 [Triton DSL 定义高性能算子](Triton_DSL_定义高性能算子.md) [Updating...]
-
-[Allo Accelerator Design Language](Allo_Accelerator_Design_Language.md)
-
-    构建Allo环境（宿主机或Docker） | Allo测试 | 示例：GEMM | 示例：整数输出稳态脉动阵列 | Allo原语
 
 ## AI模型相关
 
@@ -54,7 +55,7 @@
     卷积神经网络（CNN） | 循环神经网络（RNN） | 强化学习模型 | 生成对抗网络（GAN）
     图神经网络（GNN） | Transformer架构 | 扩散模型（Diffusion） | 其他模型
 
-[nn模型的Pytorch实现](https://github.com/zeroherolin/pytorch-nn) [Updating...]
+[NN模型的Pytorch实现](https://github.com/zeroherolin/pytorch-nn) [Updating...]
 
     Basic： Mnist（手写数字识别）
     CNN： VGG19（图像分类） | ResNet（图像分类）
@@ -103,10 +104,4 @@
 
 [Ubuntu安装Docker](Ubuntu安装Docker.md)
 
-[Ubuntu安装Nvidia驱动、CUDA、Pytorch](Ubuntu安装Nvidia驱动、CUDA、Pytorch.md)
-
-## 其他
-
-[Raspberry Pi 5 & Arm64](Linux_Arm64.md)
-
-    Arm64安装Docker | Arm64编译XDMA驱动
+[Ubuntu安装Nvidia驱动、CUDA、cuDNN、Pytorch](Ubuntu安装Nvidia驱动、CUDA、cuDNN、Pytorch.md)

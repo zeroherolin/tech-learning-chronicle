@@ -19,9 +19,9 @@
 
 [Halide 解耦算法描述](Halide_解耦算法描述.md) [Updating...]
 
-[TVM 深度学习编译器](TVM_深度学习编译器.md) [Updating...]
+[TVM 深度学习编译器](TVM_深度学习编译器.md)
 
-    构建TVM环境 | 
+    构建TVM环境 | TVM总体流 | CPU基础测试 | CUDA基础测试
 
 [Allo Accelerator Design Language](Allo_Accelerator_Design_Language.md)
 

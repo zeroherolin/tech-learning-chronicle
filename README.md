@@ -8,6 +8,8 @@
 
 [AST抽象语法树](AST抽象语法树.md) [Updating...]
 
+[编译原理](编译原理.md) [Updating...]
+
 [AI编译器常用优化策略](AI编译器常用优化策略.md)
 
     前端优化： 算子融合 | 布局转换 | 内存分配 | 常量折叠与常量传播
@@ -23,11 +25,7 @@
 
     构建TVM环境 | TVM总体流 | CPU基础测试 | CUDA基础测试
 
-[Allo Accelerator Design Language](Allo_Accelerator_Design_Language.md)
-
-    构建Allo环境（宿主机或Docker） | Allo测试 | 示例：GEMM | 示例：整数输出稳态脉动阵列 | Allo原语
-
-[LLVM MLIR 基础测试](LLVM_MLIR_基础测试.md)
+[LLVM MLIR 基础](LLVM_MLIR_基础.md)
 
     构建MLIR环境 | MLIR Opt 测试 | MLIR EmitC 测试
 
@@ -79,13 +77,23 @@
 
     模型量化 | 模型压缩
 
+## 处理器架构相关
+
+[NVIDIA GPU架构与CUDA核心](NVIDIA_GPU架构与CUDA核心.md) [Updating...]
+
 ## 并行与分布式系统
 
 [NCCL通讯库](NCCL通讯库.md) [Updating...]
 
 [MPI并行计算](MPI并行计算.md) [Updating...]
 
-## 编程工具
+## 操作系统
+
+[Linux内核基础](Linux内核基础.md) [Updating...]
+
+## 编程语言和工具
+
+[C内存管理](C内存管理.md) [Updating...]
 
 [C编译工具](C编译工具.md)
 

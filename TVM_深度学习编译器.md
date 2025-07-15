@@ -82,6 +82,8 @@ python -c "import tvm; print('\n'.join(f'{k}: {v}' for k, v in tvm.support.libin
 
 ## CPU基础测试
 
+构造一个简单的MLPModel
+
 ```python
 import tvm
 from tvm import relax
@@ -106,9 +108,9 @@ class MLPModel(nn.Module):
 mod, param_spec = MLPModel().export_tvm(
     spec={"forward": {"x": nn.spec.Tensor((1, 784), "float32")}}
 )
-mod.show()
 
 mod = relax.get_pipeline("zero")(mod)
+mod.show()
 
 target = tvm.target.Target("llvm")
 device = tvm.cpu()
@@ -129,6 +131,87 @@ print(out.numpy())
 ```
 
 ## CUDA基础测试
+
+使用dlight自动优化GPU
+
+```python
+import tvm
+from tvm import relax
+from tvm.relax.frontend import nn
+import numpy as np
+from tvm import dlight as dl
+
+
+class MLPModel(nn.Module):
+    def __init__(self):
+        super(MLPModel, self).__init__()
+        self.fc1 = nn.Linear(784, 256)
+        self.relu1 = nn.ReLU()
+        self.fc2 = nn.Linear(256, 10)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        return x
+
+
+mod, param_spec = MLPModel().export_tvm(
+    spec={"forward": {"x": nn.spec.Tensor((1, 784), "float32")}}
+)
+
+mod = relax.get_pipeline("zero")(mod)
+
+target = tvm.target.Target("cuda")
+device = tvm.cuda()
+
+with target:
+    mod = dl.ApplyDefaultSchedule(
+        dl.gpu.Matmul(),
+        dl.gpu.GEMV(),
+        dl.gpu.Reduction(),
+        dl.gpu.GeneralReduction(),
+        dl.gpu.Fallback(),
+    )(mod)
+mod.show()
+
+ex = relax.build(mod, target)
+vm = relax.VirtualMachine(ex, device)
+
+params = []
+for _, param_info in param_spec:
+    param_np = np.random.rand(*param_info.shape).astype("float32")
+    params.append(tvm.nd.array(param_np, device=device))
+
+data = np.random.rand(1, 784).astype("float32")
+tvm_data = tvm.nd.array(data, device=device)
+
+out = vm["forward"](tvm_data, *params)
+print(out.numpy())
+```
+
+也可以手动绑定
+
+```python
+with target:
+    new_mod = tvm.IRModule()
+    for gv, func in mod.functions.items():
+        if not isinstance(func, tir.PrimFunc):
+            new_mod[gv] = func
+            continue
+        sch = tir.Schedule(func)
+        root = sch.get_block("root")
+        for block in sch.get_child_blocks(root):
+            loops = sch.get_loops(block)
+            if len(loops) >= 1:
+                sch.bind(loops[0], "blockIdx.x")
+            if len(loops) >= 2:
+                sch.bind(loops[1], "threadIdx.x")
+        new_mod[gv] = sch.mod["main"]
+    mod = new_mod
+```
+
+再来一个矩阵乘简单示例
 
 ```python
 import tvm

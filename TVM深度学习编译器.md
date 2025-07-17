@@ -1,4 +1,4 @@
-# TVM 深度学习编译器
+# TVM深度学习编译器
 
 <img src="assets/tvm-logo-small.png" width=150/>
 
@@ -80,7 +80,70 @@ python -c "import tvm; print('\n'.join(f'{k}: {v}' for k, v in tvm.support.libin
 
 - 构建和通用部署：将优化后的模型构建为可部署到通用运行时的模块，并在不同的设备（如CPU、GPU或其他加速器）上执行
 
-## CPU基础测试
+## Relax IR
+
+- Relay是TVM的高级中间表示，用于表示深度学习模型和计算图
+- Relay采用函数式编程范式，支持各种优化变换，如图优化、量化等
+- Relay允许从前端框架（如PyTorch、ONNX）导入模型，并转换为可优化的形式
+
+Relay现已被Relax取代
+
+- Relax采用符号形状表示张量维度，支持全局跟踪动态形状关系
+- Relax支持从高级神经网络层到低级张量操作的跨级抽象，实现跨层级优化
+- Relax提供可组合的变换框架，可选择性地应用于模型的不同组件，提供灵活的自定义和优化选项
+
+### Relax示例
+
+```python
+import tvm
+from tvm import relax
+
+x = relax.Var("x", relax.TensorStructInfo([1, 784], "float32"))
+w1 = relax.Var("w1", relax.TensorStructInfo([256, 784], "float32"))
+b1 = relax.Var("b1", relax.TensorStructInfo([256], "float32"))
+w2 = relax.Var("w2", relax.TensorStructInfo([10, 256], "float32"))
+b2 = relax.Var("b2", relax.TensorStructInfo([10], "float32"))
+
+hidden = relax.op.add(relax.op.matmul(x, relax.op.permute_dims(w1)), b1)
+hidden = relax.op.nn.relu(hidden)
+output = relax.op.add(relax.op.matmul(hidden, relax.op.permute_dims(w2)), b2)
+
+func = relax.Function([x, w1, b1, w2, b2], output, ret_struct_info=relax.TensorStructInfo([1, 10], "float32"))
+mod = tvm.IRModule.from_expr(func)
+mod.show()
+```
+
+## 算子定义
+
+- 在TVM中，可以使用Tensor Expression定义自定义算子
+- TE提供了一种声明式的方式来描述计算，然后通过调度（Schedule）来优化其实现
+
+### 算子定义示例
+
+一个简单的张量加
+
+```python
+import tvm
+from tvm import te
+import numpy as np
+
+n = 10
+A = te.placeholder((n,), name="A")
+B = te.compute((n,), lambda i: A[i] + 1.0, name="B")
+func = te.create_prim_func([A, B])
+mod = tvm.build(func, target="llvm")
+dev = tvm.cpu(0)
+a = tvm.nd.array(np.arange(n).astype("float32"), dev)
+b = tvm.nd.array(np.zeros(n, dtype="float32"), dev)
+mod(a, b)
+print(b.numpy())
+```
+
+## 部署示例
+
+- TVM支持将优化后的模型部署到各种后端，部署过程包括构建可执行模块并在运行时执行
+
+### CPU基础部署
 
 构造一个简单的MLPModel
 
@@ -130,7 +193,7 @@ out = vm["forward"](tvm_data, *params)
 print(out.numpy())
 ```
 
-## CUDA基础测试
+### CUDA基础部署
 
 使用dlight自动优化GPU
 
@@ -253,6 +316,84 @@ c = tvm.nd.array(b_np, device=device)
 
 cuda_mod(a, b, c)
 print(c.numpy())
+```
+
+## AutoTVM
+
+- AutoTVM是TVM的自动调优框架，用于优化张量表达式的性能
+- AutoTVM通过搜索最佳的调度策略（如循环 tiling、并行化）来生成高效的内核代码
+- AutoTVM支持基于模板的调优，并可以使用机器学习模型加速搜索过程
+
+AutoTVM现已被Meta-Schedule取代
+
+- Meta-Schedule使用基于规则的调度和自动调优，提供更大搜索空间和更好性能，无需手动定义模板
+- Meta-Schedule内置成本模型和调优算法，支持机器学习驱动的搜索加速
+- Meta-Schedule更好地处理动态形状和更复杂的IR，支持TIR的端到端优化
+- Meta-Schedule减少了手动配置需求，使调优过程更高效和用户友好
+
+### Meta-Schedule示例
+
+优化一个矩阵乘
+
+```python
+import tvm
+from tvm import meta_schedule as ms
+from tvm.script import tir as T
+import numpy as np
+import tvm.testing
+from tvm.meta_schedule import tir_integration
+
+@T.prim_func(private=True)
+def matmul(a: T.handle, b: T.handle, c: T.handle) -> None:
+    A = T.match_buffer(a, (128, 128), "float32")
+    B = T.match_buffer(b, (128, 128), "float32")
+    C = T.match_buffer(c, (128, 128), "float32")
+    for i, j, k in T.grid(128, 128, 128):
+        with T.block("update"):
+            vi, vj, vk = T.axis.remap("SSR", [i, j, k])
+            with T.init():
+                C[vi, vj] = 0.0
+            C[vi, vj] = C[vi, vj] + A[vi, vk] * B[vj, vk]
+
+target = tvm.target.Target("llvm -num-cores=4")
+
+# Tuning
+database = ms.tune_tir(
+    mod=matmul,
+    target=target,
+    max_trials_global=64,
+    num_trials_per_iter=2,
+    work_dir="./tune_tmp",
+    runner=ms.runner.LocalRunner(
+        evaluator_config=ms.runner.EvaluatorConfig(
+            number=3,
+            repeat=1,
+        )
+    ),
+    cost_model=ms.cost_model.RandomModel(),
+)
+
+sch = tir_integration.compile_tir(database, matmul, target)
+print(sch.trace)
+
+# Build the tuned function
+with tvm.transform.PassContext(opt_level=3):
+    rt = tvm.build(sch.mod, target=target)
+
+# Test
+a_np = np.random.uniform(size=(128, 128)).astype(np.float32)
+b_np = np.random.uniform(size=(128, 128)).astype(np.float32)
+c_np = a_np.dot(b_np.transpose())
+
+dev = tvm.cpu()
+a = tvm.nd.array(a_np, device=dev)
+b = tvm.nd.array(b_np, device=dev)
+c = tvm.nd.array(np.zeros((128, 128), dtype="float32"), device=dev)
+
+f_timer = rt.time_evaluator("main", dev, number=10)
+print("Latency:", f_timer(a, b, c).mean)
+
+tvm.testing.assert_allclose(c.numpy(), c_np, rtol=1e-5)
 ```
 
 ***
